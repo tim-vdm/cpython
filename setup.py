@@ -758,11 +758,8 @@ class PyBuildExt(build_ext):
         exts.append( Extension('_socket', ['socketmodule.c'],
                                depends = ['socketmodule.h']) )
         # Detect SSL support for the socket module (via _ssl)
-        search_for_ssl_incs_in = [
-                              '/usr/local/ssl/include',
-                              '/usr/contrib/ssl/include/'
-                             ]
-        ssl_incs = find_file('openssl/ssl.h', inc_dirs,
+        search_for_ssl_incs_in = ['/vortex/usr/include']
+        ssl_incs = find_file('openssl/ssl.h', [],
                              search_for_ssl_incs_in
                              )
         if ssl_incs is not None:
@@ -770,17 +767,20 @@ class PyBuildExt(build_ext):
                                ['/usr/kerberos/include'])
             if krb5_h:
                 ssl_incs += krb5_h
-        ssl_libs = find_library_file(self.compiler, 'ssl',lib_dirs,
-                                     ['/usr/local/ssl/lib',
-                                      '/usr/contrib/ssl/lib/'
-                                     ] )
+        ssl_libs = find_library_file(self.compiler, 'ssl',[],
+                                     ['/vortex/usr/lib'] )
 
         if (ssl_incs is not None and
             ssl_libs is not None):
+#            exts.append( Extension('_ssl', ['_ssl.c'],
+#                                   include_dirs = ssl_incs,
+#                                   library_dirs = ssl_libs,
+#                                   libraries = ['ssl', 'crypto'],
+#                                   depends = ['socketmodule.h']), )
             exts.append( Extension('_ssl', ['_ssl.c'],
                                    include_dirs = ssl_incs,
-                                   library_dirs = ssl_libs,
-                                   libraries = ['ssl', 'crypto'],
+                                   library_dirs = [],
+                                   extra_link_args = ['/vortex/usr/lib/libssl.a', '/vortex/usr/lib/libcrypto.a', '-ldl'],
                                    depends = ['socketmodule.h']), )
         else:
             missing.append('_ssl')
@@ -817,11 +817,17 @@ class PyBuildExt(build_ext):
             if have_usable_openssl:
                 # The _hashlib module wraps optimized implementations
                 # of hash functions from the OpenSSL library.
+#                exts.append( Extension('_hashlib', ['_hashopenssl.c'],
+#                                       depends = ['hashlib.h'],
+#                                       include_dirs = ssl_incs,
+#                                       library_dirs = ssl_libs,
+#                                       libraries = ['ssl', 'crypto']) )
                 exts.append( Extension('_hashlib', ['_hashopenssl.c'],
                                        depends = ['hashlib.h'],
                                        include_dirs = ssl_incs,
-                                       library_dirs = ssl_libs,
-                                       libraries = ['ssl', 'crypto']) )
+                                       library_dirs = [],
+                                       extra_link_args = ['/vortex/usr/lib/libssl.a', '/vortex/usr/lib/libcrypto.a', '-ldl']
+                                       ) )
             else:
                 print("warning: openssl 0x%08x is too old for _hashlib" %
                       openssl_ver)
@@ -1261,6 +1267,7 @@ class PyBuildExt(build_ext):
                 else:
                     libs = []
                 exts.append( Extension('nis', ['nismodule.c'],
+                                       include_dirs=['/usr/include/tirpc'], # rpc/rpc.h is no longer part of glibc
                                        libraries = libs) )
             else:
                 missing.append('nis')
