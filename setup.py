@@ -17,7 +17,7 @@ from distutils.command.install_lib import install_lib
 from distutils.command.build_scripts import build_scripts
 from distutils.spawn import find_executable
 
-VORTEX_DIR = "/vortex"
+VORTEX_BUNDLE_ROOT = os.environ['VORTEX_BUNDLE_ROOT']
 
 cross_compiling = "_PYTHON_HOST_PLATFORM" in os.environ
 
@@ -760,7 +760,7 @@ class PyBuildExt(build_ext):
         exts.append( Extension('_socket', ['socketmodule.c'],
                                depends = ['socketmodule.h']) )
         # Detect SSL support for the socket module (via _ssl)
-        search_for_ssl_incs_in = [os.path.join(VORTEX_DIR, 'usr/include')]
+        search_for_ssl_incs_in = [os.path.join(VORTEX_BUNDLE_ROOT, 'include')]
         ssl_incs = find_file('openssl/ssl.h', [],
                              search_for_ssl_incs_in
                              )
@@ -770,7 +770,7 @@ class PyBuildExt(build_ext):
             if krb5_h:
                 ssl_incs += krb5_h
         ssl_libs = find_library_file(self.compiler, 'ssl',[],
-                                     [os.path.join(VORTEX_DIR, 'usr/lib')] )
+                                     [os.path.join(VORTEX_BUNDLE_ROOT, 'lib')] )
 
         if (ssl_incs is not None and
             ssl_libs is not None):
@@ -783,8 +783,8 @@ class PyBuildExt(build_ext):
                                    include_dirs = ssl_incs,
                                    library_dirs = [],
                                    extra_link_args = [
-                                       os.path.join(VORTEX_DIR, 'usr/lib/libssl.a'),
-                                       os.path.join(VORTEX_DIR, 'usr/lib/libcrypto.a'),
+                                       os.path.join(VORTEX_BUNDLE_ROOT, 'lib/libssl.a'),
+                                       os.path.join(VORTEX_BUNDLE_ROOT, 'lib/libcrypto.a'),
                                        '-ldl'],
                                    depends = ['socketmodule.h']), )
         else:
@@ -832,8 +832,8 @@ class PyBuildExt(build_ext):
                                        include_dirs = ssl_incs,
                                        library_dirs = [],
                                        extra_link_args = [
-                                           os.path.join(VORTEX_DIR, 'usr/lib/libssl.a'),
-                                           os.path.join(VORTEX_DIR, 'usr/lib/libcrypto.a'),
+                                           os.path.join(VORTEX_BUNDLE_ROOT, 'lib/libssl.a'),
+                                           os.path.join(VORTEX_BUNDLE_ROOT, 'lib/libcrypto.a'),
                                            '-ldl']
                                        ) )
             else:
